@@ -129,50 +129,7 @@ class Random
         // everyone's http requests.
         static $crypto = false, $v;
         if ($crypto === false) {
-            // save old session data
-            $old_session_id = session_id();
-            $old_use_cookies = ini_get('session.use_cookies');
-            $old_session_cache_limiter = session_cache_limiter();
-            $_OLD_SESSION = isset($_SESSION) ? $_SESSION : false;
-            if ($old_session_id != '') {
-                session_write_close();
-            }
-
-            session_id(1);
-            ini_set('session.use_cookies', 0);
-            session_cache_limiter('');
-            session_start();
-
-            $v = $seed = $_SESSION['seed'] = pack('H*', sha1(
-                (isset($_SERVER) ? phpseclib_safe_serialize($_SERVER) : '') .
-                (isset($_POST) ? phpseclib_safe_serialize($_POST) : '') .
-                (isset($_GET) ? phpseclib_safe_serialize($_GET) : '') .
-                (isset($_COOKIE) ? phpseclib_safe_serialize($_COOKIE) : '') .
-                phpseclib_safe_serialize($GLOBALS) .
-                phpseclib_safe_serialize($_SESSION) .
-                phpseclib_safe_serialize($_OLD_SESSION)
-            ));
-            if (!isset($_SESSION['count'])) {
-                $_SESSION['count'] = 0;
-            }
-            $_SESSION['count']++;
-
-            session_write_close();
-
-            // restore old session data
-            if ($old_session_id != '') {
-                session_id($old_session_id);
-                session_start();
-                ini_set('session.use_cookies', $old_use_cookies);
-                session_cache_limiter($old_session_cache_limiter);
-            } else {
-                if ($_OLD_SESSION !== false) {
-                    $_SESSION = $_OLD_SESSION;
-                    unset($_OLD_SESSION);
-                } else {
-                    unset($_SESSION);
-                }
-            }
+            $v = $seed = Seeder::getSeed();
 
             // in SSH2 a shared secret and an exchange hash are generated through the key exchange process.
             // the IV client to server is the hash of that "nonce" with the letter A and for the encryption key it's the letter C.
